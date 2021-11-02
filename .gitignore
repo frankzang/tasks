@@ -1,0 +1,6 @@
+# Logs
+# Binaries
+node_modules/
+# Builds
+dist/
+.env
