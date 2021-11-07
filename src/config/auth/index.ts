@@ -40,7 +40,7 @@ export const buildAuthToken = (userId: number) => pipe(
             { id: userId },
             process.env['JWT_SECRET'] as string,
             {
-                expiresIn: 60 * 60
+                expiresIn: 60 * 60 * 24
             }
         )
     )
