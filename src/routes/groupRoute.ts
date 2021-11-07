@@ -9,9 +9,10 @@ const groupRoute = Router();
 
 groupRoute.post('/', requireAuth, (req, res) => {
     const group = req.body;
+    const { userId } = req;
 
     pipe(
-        createGroup(group)({ createGroupInDb }),
+        createGroup(group, userId)({ createGroupInDb }),
         TE.map(group => res.json({ group })),
         TE.mapLeft(result => res.status(result.code).json({ ...result.error }))
     )()
@@ -19,17 +20,20 @@ groupRoute.post('/', requireAuth, (req, res) => {
 
 groupRoute.put('/', requireAuth, (req, res) => {
     const group = req.body;
+    const { userId } = req;
 
     pipe(
-        updateGroup(group)({ updateGroupInDb }),
+        updateGroup(group, userId)({ updateGroupInDb }),
         TE.map(group => res.json({ group })),
         TE.mapLeft(result => res.status(result.code).json({ ...result.error }))
     )()
 });
 
 groupRoute.delete('/:groupId', requireAuth, (req, res) => {
+    const groupId = Number(req.params['groupId'])
+    const { userId } = req;
     pipe(
-        deleteGroup(Number(req.params['groupId']))({ deleteGroupInDb }),
+        deleteGroup(groupId, userId)({ deleteGroupInDb }),
         TE.map(group => res.json({ group })),
         TE.mapLeft(result => res.status(result.code).json({ ...result.error }))
     )()

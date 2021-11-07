@@ -9,6 +9,7 @@ const taskRoute = Router();
 
 taskRoute.post('/', requireAuth, (req, res) => {
     const task = req.body;
+    // const { userId } = req;
 
     pipe(
         createTask(task)({ createTaskInDb }),

@@ -1,11 +1,18 @@
 import { Group } from ".prisma/client"
 import { prisma } from "../config/database/prisma"
-import { ValidationError } from "../helpers/errors";
+import { AuthError, ValidationError } from "../helpers/errors";
 
-export const createGroupInDb = async (groupData: Group) => {
+const checkIfUserOwnsGroup = (groupId: number, userId: number) => prisma.group.findFirst({
+    where: {
+        id: groupId,
+        userId,
+    }
+});
+
+export const createGroupInDb = async (groupData: Group, userId: number) => {
     try {
         const group = await prisma.group.create({
-            data: groupData
+            data: { ...groupData, userId }
         });
 
         return group;
@@ -14,10 +21,16 @@ export const createGroupInDb = async (groupData: Group) => {
         throw new ValidationError("Invalid group data");
     }
 };
-export const updateGroupInDb = async (groupData: Group) => {
+
+export const updateGroupInDb = async (groupData: Group, userId: number) => {
     try {
+        const userOwnsGroup = await checkIfUserOwnsGroup(groupData.id, userId)
+
+        if (!userOwnsGroup) throw new AuthError();
+
         const group = await prisma.group.update({
             where: { id: groupData.id },
+
             data: {
                 title: groupData.title,
             }
@@ -26,12 +39,17 @@ export const updateGroupInDb = async (groupData: Group) => {
         return group;
     } catch (error: any) {
         console.error(error);
+        if (error instanceof AuthError) throw error;
         throw new ValidationError("Can't update group");
     }
 };
 
-export const deleteGroupInDb = async (groupId: number) => {
+export const deleteGroupInDb = async (groupId: number, userId: number) => {
     try {
+        const userOwnsGroup = await checkIfUserOwnsGroup(groupId, userId)
+
+        if (!userOwnsGroup) throw new AuthError();
+
         const group = await prisma.group.update({
             where: { id: groupId },
             data: {

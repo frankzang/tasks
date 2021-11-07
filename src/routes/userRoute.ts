@@ -7,9 +7,11 @@ import { requireAuth } from '../middlewares/auth';
 
 const userRoute = Router();
 
-userRoute.get('/:id', requireAuth, (req, res) => {
+userRoute.get('/', requireAuth, (req, res) => {
+    const { userId } = req;
+
     pipe(
-        getUser(Number(req.params['id']))({ getUserFromDb }),
+        getUser(userId)({ getUserFromDb }),
         TE.map(user => res.json({ user })),
         TE.mapLeft(result => res.status(result.code).json({ ...result.error }))
     )()

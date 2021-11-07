@@ -1,28 +1,24 @@
 {
-    "compilerOptions": {
-      "target": "esnext",
-      "sourceMap": true,
-      "outDir": "./dist",
-      "rootDir": "./",
-      "lib":  ["ESNext"],  
-      "strict": true,
-      "noUnusedLocals": true,
-      "noUnusedParameters": true,
-      "noImplicitReturns": true,
-      "noFallthroughCasesInSwitch": true,
-      "noUncheckedIndexedAccess": true,
-      "noPropertyAccessFromIndexSignature": true,
-      "moduleResolution": "node",
-      "allowSyntheticDefaultImports": true,
-      "esModuleInterop": true,
-      "skipLibCheck": true,
-      "forceConsistentCasingInFileNames": true
-    },
-    "include": [
-      "**/*.ts"
-    ],
-    "exclude": [
-      "node_modules",
-      "dist"
-    ]
-  }
+  "compilerOptions": {
+    "target": "esnext",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./",
+    "lib": ["ESNext"],
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "typeRoots": ["./src/typings", "./node_modules/@types", ]
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}
