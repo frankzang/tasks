@@ -6,8 +6,6 @@ import { AuthError } from "../helpers/errors";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { getError } from "../helpers/http";
 
-const validateAuthHeader = (auth?: string) => auth ? E.right(auth) : E.left(new AuthError());
-
 const verifyJWT = async (token: string) => new Promise<JwtPayload>((res, rej) => {
     jwt.verify(token, process.env['JWT_SECRET'] as string, (err, decoded) => {
         return err ? rej(new AuthError()) : res((decoded as JwtPayload))
@@ -15,7 +13,8 @@ const verifyJWT = async (token: string) => new Promise<JwtPayload>((res, rej) =>
 })
 
 export const requireAuth = (req: Request, res: Response, next: NextFunction) => pipe(
-    validateAuthHeader(req.headers.authorization),
+    req.headers.authorization,
+    E.fromNullable(new AuthError()),
     TE.fromEither,
     TE.chain(
         (token) => TE.tryCatch(() => verifyJWT(token), E.toError)
