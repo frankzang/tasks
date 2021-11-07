@@ -21,7 +21,6 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction) => 
         (token) => TE.tryCatch(() => verifyJWT(token), E.toError)
     ),
     TE.map(payload => {
-        //@ts-ignore
         req.userId = payload['id'] as number;
         next();
     }),

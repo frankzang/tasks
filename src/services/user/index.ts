@@ -63,11 +63,9 @@ export const loginUser = (email: string, password: string) => pipe(
         ({ email, password }) => pipe(
             RTE.ask<SignInDeps>(),
             RTE.chain(
-                ({ getUserByEmailFromDb }) => pipe(
-                    RTE.fromTaskEither(
-                        TE.tryCatch(() => getUserByEmailFromDb(email), E.toError)
-                    ),
-                )
+                ({ getUserByEmailFromDb }) => RTE.fromTaskEither(
+                    TE.tryCatch(() => getUserByEmailFromDb(email), E.toError)
+                ),
             ),
             RTE.chainW(
                 ({ id, password: hashedPassword }) => pipe(
