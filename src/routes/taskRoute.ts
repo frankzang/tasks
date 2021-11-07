@@ -3,10 +3,11 @@ import { pipe } from 'fp-ts/lib/function';
 import * as TE from "fp-ts/lib/TaskEither";
 import { createTask, deleteTask, updateTask } from '../services/task';
 import { createTaskInDb, updateTaskInDb, deleteTaskInDb } from '../database/task';
+import { requireAuth } from '../middlewares/auth';
 
 const taskRoute = Router();
 
-taskRoute.post('/', (req, res) => {
+taskRoute.post('/', requireAuth, (req, res) => {
     const task = req.body;
 
     pipe(
@@ -16,7 +17,7 @@ taskRoute.post('/', (req, res) => {
     )()
 });
 
-taskRoute.put('/', (req, res) => {
+taskRoute.put('/', requireAuth, (req, res) => {
     const task = req.body;
 
     pipe(
@@ -26,9 +27,9 @@ taskRoute.put('/', (req, res) => {
     )()
 });
 
-taskRoute.delete('/:taskId', (req, res) => {
+taskRoute.delete('/:taskId', requireAuth, (req, res) => {
     pipe(
-        deleteTask(Number(req.params.taskId))({ deleteTaskInDb }),
+        deleteTask(Number(req.params['taskId']))({ deleteTaskInDb }),
         TE.map(task => res.json({ task })),
         TE.mapLeft(result => res.status(result.code).json({ ...result.error }))
     )()

@@ -8,7 +8,10 @@ export const getUserFromDb = async (id: number) => {
             where: {
                 id
             },
-            include: {
+            select: {
+                id: true,
+                name: true,
+                email: true,
                 Group: {
                     where: {
                         deleted: false,
@@ -46,5 +49,22 @@ export const createUserInDb = async (userData: User) => {
             throw new ValidationError("Email already in use");
 
         throw new ValidationError("Invalid user data");
+    }
+};
+
+export const getUserByEmailFromDb = async (email: string) => {
+    try {
+        const user = await prisma.user.findUnique({
+            where: {
+                email
+            }
+        });
+
+        if (!user) throw new NotFoundError("User not found");
+
+        return user;
+    } catch (error: any) {
+        console.error(error);
+        throw error
     }
 };

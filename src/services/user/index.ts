@@ -5,16 +5,23 @@ import * as E from "fp-ts/lib/Either";
 import { pipe } from "fp-ts/lib/function";
 import { getError } from "../../helpers/http";
 import { ValidationError } from "../../helpers/errors";
+import { string } from "fp-ts";
+import { buildAuthToken, comparePassword, hashPassword } from "../../config/auth";
 
 type CreateUserDeps = {
-    createUserInDb(user: User): Promise<User>
+    createUserInDb(user: User): Promise<User>,
 }
 export const createUser = (user: User) =>
     pipe(
         RTE.ask<CreateUserDeps>(),
-        RTE.chain(
-            ({ createUserInDb }) => RTE.fromTaskEither(
-                TE.tryCatch(() => createUserInDb(user), E.toError)
+        RTE.chainW(
+            ({ createUserInDb }) => pipe(
+                RTE.fromTaskEither(hashPassword(user.password)),
+                RTE.chainW(
+                    (password) => RTE.fromTaskEither(
+                        TE.tryCatch(() => createUserInDb({ ...user, password }), E.toError)
+                    )
+                )
             )
         ),
         RTE.mapLeft(getError)
@@ -23,7 +30,7 @@ export const createUser = (user: User) =>
 const validateUserId = (id: number) => Number.isNaN(id) ? E.left(new ValidationError('Invalida id')) : E.right(id);
 
 type GetUserDeps = {
-    getUserFromDb(id: number): Promise<User>
+    getUserFromDb(id: number): Promise<Partial<User>>
 }
 export const getUser = (id: number) => pipe(
     validateUserId(id),
@@ -40,3 +47,37 @@ export const getUser = (id: number) => pipe(
     ),
     RTE.mapLeft(getError)
 );
+
+const validateSignInData = (email: string, password: string) =>
+    (string.isString(email) && string.isString(password))
+        ? E.right({ email, password })
+        : E.left(new ValidationError("Invalid email or password"));
+
+type SignInDeps = {
+    getUserByEmailFromDb: (email: string) => Promise<User>
+}
+export const loginUser = (email: string, password: string) => pipe(
+    validateSignInData(email, password),
+    RTE.fromEither,
+    RTE.chain(
+        ({ email, password }) => pipe(
+            RTE.ask<SignInDeps>(),
+            RTE.chain(
+                ({ getUserByEmailFromDb }) => pipe(
+                    RTE.fromTaskEither(
+                        TE.tryCatch(() => getUserByEmailFromDb(email), E.toError)
+                    ),
+                )
+            ),
+            RTE.chainW(
+                ({ id, password: hashedPassword }) => pipe(
+                    RTE.fromTaskEither(comparePassword(password, hashedPassword)),
+                    RTE.chainW(
+                        () => RTE.fromEither(buildAuthToken(id))
+                    )
+                )
+            ),
+        )
+    ),
+    RTE.mapLeft(getError)
+)

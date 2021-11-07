@@ -1,14 +1,15 @@
 import { Router } from 'express';
 import { pipe } from 'fp-ts/lib/function';
-import { createUserInDb, getUserFromDb } from '../database/user';
-import { createUser, getUser } from '../services/user';
+import { createUserInDb, getUserByEmailFromDb, getUserFromDb } from '../database/user';
+import { createUser, getUser, loginUser } from '../services/user';
 import * as TE from "fp-ts/lib/TaskEither";
+import { requireAuth } from '../middlewares/auth';
 
 const userRoute = Router();
 
-userRoute.get('/:id', (req, res) => {
+userRoute.get('/:id', requireAuth, (req, res) => {
     pipe(
-        getUser(Number(req.params.id))({ getUserFromDb }),
+        getUser(Number(req.params['id']))({ getUserFromDb }),
         TE.map(user => res.json({ user })),
         TE.mapLeft(result => res.status(result.code).json({ ...result.error }))
     )()
@@ -24,5 +25,14 @@ userRoute.post('/', (req, res) => {
     )()
 });
 
-export default userRoute;
+userRoute.post('/login', (req, res) => {
+    const { email, password } = req.body;
 
+    pipe(
+        loginUser(email, password)({ getUserByEmailFromDb }),
+        TE.map(token => res.json({ token })),
+        TE.mapLeft(result => res.status(result.code).json({ ...result.error }))
+    )()
+});
+
+export default userRoute;
