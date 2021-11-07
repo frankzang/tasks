@@ -3,10 +3,11 @@ import { pipe } from 'fp-ts/lib/function';
 import * as TE from "fp-ts/lib/TaskEither";
 import { createGroup, deleteGroup, updateGroup } from '../services/group';
 import { createGroupInDb, updateGroupInDb, deleteGroupInDb } from '../database/group';
+import { requireAuth } from '../middlewares/auth';
 
 const groupRoute = Router();
 
-groupRoute.post('/', (req, res) => {
+groupRoute.post('/', requireAuth, (req, res) => {
     const group = req.body;
 
     pipe(
@@ -16,7 +17,7 @@ groupRoute.post('/', (req, res) => {
     )()
 });
 
-groupRoute.put('/', (req, res) => {
+groupRoute.put('/', requireAuth, (req, res) => {
     const group = req.body;
 
     pipe(
@@ -26,9 +27,9 @@ groupRoute.put('/', (req, res) => {
     )()
 });
 
-groupRoute.delete('/:groupId', (req, res) => {
+groupRoute.delete('/:groupId', requireAuth, (req, res) => {
     pipe(
-        deleteGroup(Number(req.params.groupId))({ deleteGroupInDb }),
+        deleteGroup(Number(req.params['groupId']))({ deleteGroupInDb }),
         TE.map(group => res.json({ group })),
         TE.mapLeft(result => res.status(result.code).json({ ...result.error }))
     )()
