@@ -16,6 +16,7 @@ model User {
   Group     Group[]
   password  String
 
+  Task Task[]
   @@map("users")
 }
 
@@ -24,12 +25,15 @@ model Task {
   title        String     @db.VarChar(255)
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
+  // hours required for the task completion
   requiredTime Int
-  ellapsedTime Int        @default(0)
+  dueDate      DateTime   @default(now())
   status       TaskStatus @default(WAITING)
   group        Group      @relation(fields: [groupId], references: [id])
   groupId      Int
   deleted      Boolean    @default(false)
+  user         User       @relation(fields: [userId], references: [id])
+  userId       Int
 
   @@map("tasks")
 }
