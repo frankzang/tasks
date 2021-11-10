@@ -5,6 +5,7 @@ import * as TE from 'fp-ts/TaskEither'
 import { AuthError } from "../helpers/errors";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { getError } from "../helpers/http";
+import { AUTH_TOKEN_NAME } from "../contants";
 
 const verifyJWT = async (token: string) => new Promise<JwtPayload>((res, rej) => {
     jwt.verify(token, process.env['JWT_SECRET'] as string, (err, decoded) => {
@@ -13,7 +14,7 @@ const verifyJWT = async (token: string) => new Promise<JwtPayload>((res, rej) =>
 })
 
 export const requireAuth = (req: Request, res: Response, next: NextFunction) => pipe(
-    req.headers.authorization,
+    req.cookies[AUTH_TOKEN_NAME],
     E.fromNullable(new AuthError()),
     TE.fromEither,
     TE.chain(
