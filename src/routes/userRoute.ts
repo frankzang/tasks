@@ -4,6 +4,7 @@ import { createUserInDb, getUserByEmailFromDb, getUserFromDb } from '../database
 import { createUser, getUser, loginUser } from '../services/user';
 import * as TE from "fp-ts/lib/TaskEither";
 import { requireAuth } from '../middlewares/auth';
+import { AUTH_TOKEN_NAME } from '../contants';
 
 const userRoute = Router();
 
@@ -32,7 +33,8 @@ userRoute.post('/login', (req, res) => {
 
     pipe(
         loginUser(email, password)({ getUserByEmailFromDb }),
-        TE.map(token => res.json({ token })),
+        TE.map(token => res.cookie(AUTH_TOKEN_NAME, token, { httpOnly: true })),
+        TE.map(() => res.sendStatus(200)),
         TE.mapLeft(result => res.status(result.code).json({ ...result.error }))
     )()
 });
